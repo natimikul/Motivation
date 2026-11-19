@@ -1,6 +1,4 @@
-__pycache__/
-*.pyc
-.env
-motivation.db
-uploads/
-example_output/
+pandas
+openpyxl
+streamlit
+sqlalchemy
