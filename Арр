@@ -1,0 +1,45 @@
+import streamlit as st
+from prototyping.parse_and_aggregate import process_file
+import sqlite3
+import os
+import pandas as pd
+
+DB_PATH = 'motivation.db'
+
+def init_db():
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute('''CREATE TABLE IF NOT EXISTS shipments (id INTEGER PRIMARY KEY, file TEXT, date TEXT, curator TEXT, type TEXT, value REAL)''')
+    conn.commit()
+    conn.close()
+
+
+def save_record(rec):
+    conn = sqlite3.connect(DB_PATH)
+    c = conn.cursor()
+    c.execute('INSERT INTO shipments (file,date,curator,type,value) VALUES (?,?,?,?,?)', (rec['file'], rec['date'], rec['curator'], rec['type'], rec['value_col7_itogo']))
+    conn.commit()
+    conn.close()
+
+
+def main():
+    st.title('Motivation uploader (prototype)')
+    init_db()
+    uploaded = st.file_uploader('Upload XLSX files', accept_multiple_files=True, type=['xlsx'])
+    if uploaded:
+        for up in uploaded:
+            with open('uploads/' + up.name, 'wb') as f:
+                f.write(up.getbuffer())
+            rec = process_file('uploads/' + up.name)
+            st.write(rec)
+            save_record(rec)
+
+    if st.button('Show DB'):
+        conn = sqlite3.connect(DB_PATH)
+        df = pd.read_sql_query('SELECT * FROM shipments', conn)
+        st.dataframe(df)
+
+
+if __name__ == '__main__':
+    os.makedirs('uploads', exist_ok=True)
+    main()
